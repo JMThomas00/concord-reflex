@@ -46,7 +46,8 @@ You need to be the server owner, or have the **Manage Plugins** permission.
 
 The code runs sandboxed: it can't touch your files, the network or other
 programs. Members who don't allow it see a note instead of the game.
-**Ctrl+]** gives the keyboard back to Concord.
+**Esc** gives the keyboard back to Concord, and **Tab** moves on to the
+member list.
 
 To update later: select it in **Server Settings → Plugins**, press **U**, then Enter.
 
