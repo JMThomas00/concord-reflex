@@ -1,0 +1,6 @@
+/dist/
+/client/
+/concord-reflex
+/concord-reflex.exe
+# the key that signs the client code: keep it secret
+/publisher.key

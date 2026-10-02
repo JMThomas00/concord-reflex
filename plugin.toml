@@ -1,0 +1,29 @@
+[plugin]
+id = "reflex"
+name = "Reflex"
+version = "0.1.0"                 # release.go stamps the git tag here
+description = "How fast are you? A reaction-time game that runs on each player's computer, with a leaderboard per channel."
+source_url = "https://github.com/JMThomas00/concord-reflex"
+
+[process]
+restart_on_crash = true
+max_restarts = 5
+
+[process.entrypoint.linux]
+bin = "concord-reflex"
+[process.entrypoint.darwin]
+bin = "concord-reflex"
+[process.entrypoint.windows]
+bin = "concord-reflex.exe"
+
+# The game runs in each player's client, as signed WebAssembly.
+[client]
+wasm = "client/plugin.wasm"
+capabilities = ["pane", "storage", "server"]
+publisher_key = "ed25519:0Kd9vPhQWJbCycGo1wUXeWt06f2wuwmST/CHVaIvm1g="
+
+[[channel_kind]]
+kind = "reflex"
+display_name = "Reflex"
+icon = "!"
+remote_pane = true
