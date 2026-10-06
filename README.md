@@ -74,3 +74,7 @@ git tag v0.2.0 && git push --tags
 CONCORD_PUBLISHER_KEY_FILE=path/to/publisher.key go run release.go
 gh release create v0.2.0 dist/*.zip --title v0.2.0 --notes "..."
 ```
+
+## License
+
+MIT License — see LICENSE file for details.
