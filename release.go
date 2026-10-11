@@ -8,6 +8,7 @@
 //	concord-reflex/plugin.toml             with the version stamped in
 //	concord-reflex/client/plugin.wasm      the game, run in players' clients
 //	concord-reflex/client/plugin.wasm.sig  its signature
+//	concord-reflex/client/sounds/          its sounds (game.Sounds)
 //
 // The client code is signed with the publisher key, which never leaves the
 // publisher's computer: $CONCORD_PUBLISHER_KEY (the key file's contents),
@@ -28,6 +29,7 @@ import (
 	"strings"
 
 	"github.com/JMThomas00/Concord/sdk/codesign"
+	"github.com/JMThomas00/concord-reflex/game"
 )
 
 var targets = [][2]string{
@@ -60,6 +62,7 @@ func main() {
 	module, err := os.ReadFile(wasm)
 	check(err)
 	sig := codesign.Sign(priv, module)
+	sounds := game.Sounds()
 
 	for _, t := range targets {
 		goos, goarch := t[0], t[1]
@@ -90,6 +93,9 @@ func main() {
 		add("plugin.toml", manifest, 0o644)
 		add("client/plugin.wasm", module, 0o644)
 		add("client/plugin.wasm.sig", sig, 0o644)
+		for path, data := range sounds {
+			add("client/"+path, data, 0o644)
+		}
 		check(zw.Close())
 		check(f.Close())
 		fmt.Println("packed", zipPath)

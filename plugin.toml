@@ -2,7 +2,7 @@
 id = "reflex"
 name = "Reflex"
 version = "0.1.0"                 # release.go stamps the git tag here
-description = "How fast are you? A reaction-time game that runs on each player's computer, with a leaderboard per channel."
+description = "A quick-draw duel at high noon: wait for the word, then draw. Beat the outlaw, challenge someone in the channel, or practise; win Bounties for hats and backdrops at the General Store. Runs on each player's computer, so the time is exact."
 source_url = "https://github.com/JMThomas00/concord-reflex"
 
 [process]
@@ -19,7 +19,7 @@ bin = "concord-reflex.exe"
 # The game runs in each player's client, as signed WebAssembly.
 [client]
 wasm = "client/plugin.wasm"
-capabilities = ["pane", "storage", "server"]
+capabilities = ["pane", "server", "sound"]
 publisher_key = "ed25519:0Kd9vPhQWJbCycGo1wUXeWt06f2wuwmST/CHVaIvm1g="
 
 [[channel_kind]]
@@ -27,3 +27,66 @@ kind = "reflex"
 display_name = "Reflex"
 icon = "!"
 remote_pane = true
+
+# Achievements and the Hall of Fame's leaderboard. The server half keeps
+# every player's record; members see them on Settings > About >
+# Achievements. The leaderboard ranks the fastest draw (its number is the
+# time made negative, since Concord ranks highest first).
+[[achievement]]
+id = "first_draw"
+name = "First Draw"
+description = "Draw in time, once"
+tier = "bronze"
+
+[[achievement]]
+id = "first_win"
+name = "Fastest in Town"
+description = "Win a duel"
+tier = "bronze"
+
+[[achievement]]
+id = "deputy"
+name = "Deputy"
+description = "Draw in under 250 ms"
+tier = "silver"
+
+[[achievement]]
+id = "sheriff"
+name = "Sheriff"
+description = "Draw in under 210 ms"
+tier = "gold"
+
+[[achievement]]
+id = "legend"
+name = "Legend of the West"
+description = "Draw in under 170 ms"
+tier = "gold"
+secret = true
+
+[[achievement]]
+id = "hard_outlaw"
+name = "Outlaw Hunter"
+description = "Beat the hard outlaw"
+icon = "🤠"
+
+[[achievement]]
+id = "streak_5"
+name = "Six-Shooter"
+description = "Win five duels in a row"
+icon = "🔥"
+
+[[achievement]]
+id = "showdown_win"
+name = "High Noon"
+description = "Win a showdown against someone in the channel"
+icon = "⚔"
+
+[[achievement]]
+id = "wins_50"
+name = "Gunslinger"
+description = "Win fifty duels"
+tier = "gold"
+
+[leaderboard]
+stat = "best"
+label = "Fastest draw"

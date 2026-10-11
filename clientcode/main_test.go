@@ -6,33 +6,60 @@ import (
 	"testing"
 
 	"github.com/JMThomas00/Concord/sdk/client/clienttest"
+	"github.com/JMThomas00/Concord/sdk/wire"
 	"github.com/charmbracelet/x/ansi"
+
+	"github.com/JMThomas00/concord-reflex/game"
 )
 
-// A round through Concord's client-code interface: the time is reported to
-// the server half and remembered as the best; the leaderboard is drawn.
-func TestARoundAsClientCode(t *testing.T) {
-	h := clienttest.New(t, handler(), "pane", "storage", "server")
-	h.Start(50, 20)
-	if h.ForwardingKeys() || !strings.Contains(ansi.Strip(h.LastFrame()), "Press Space to start") {
+// The arcade through Concord's client-code interface: it says hello, draws
+// the title, claims Esc past the title, and a quick draw reaches the server
+// half, with its sounds.
+func TestTheArcadeAsClientCode(t *testing.T) {
+	h := clienttest.New(t, handler(), "pane", "server", "sound")
+	h.Start(80, 24)
+	if h.ForwardingKeys() || !strings.Contains(ansi.Strip(h.LastFrame()), "PRESS ENTER") {
 		t.Fatalf("start: forwarding=%v\n%s", h.ForwardingKeys(), h.LastFrame())
 	}
-	h.Key(" ")
-	if _, ok := h.Timers()["go"]; !ok {
-		t.Fatalf("no NOW timer: %v", h.Timers())
+	if len(h.Claimed()) != 0 {
+		t.Fatalf("the title claims %v: Esc must leave the pane there", h.Claimed())
 	}
-	h.Timer("go")
-	if !strings.Contains(ansi.Strip(h.LastFrame()), "NOW!") {
-		t.Fatalf("now:\n%s", h.LastFrame())
+	var hello game.Up
+	if sent := h.Sent(); len(sent) != 1 || json.Unmarshal(sent[0], &hello) != nil || hello.T != "hello" {
+		t.Fatalf("sent %s", h.Sent())
 	}
-	h.Key(" ")
+	h.Server(game.Down{T: "state", Me: &game.Profile{Best: 240}, Top: []game.Entry{{Name: "merlot", MS: 163}}})
+	if !strings.Contains(ansi.Strip(h.LastFrame()), "FASTEST HERE: MERLOT 163 MS") {
+		t.Fatalf("title with the Hall of Fame:\n%s", h.LastFrame())
+	}
+	h.Key("enter")
+	if c := h.Claimed(); len(c) != 1 || c[0] != wire.PaneKeyEsc {
+		t.Fatalf("the menu claims %v", c)
+	}
+	h.Key("enter") // QUICK DRAW
+	h.Key(" ")     // ready
+	var draw string
+	for id := range h.Timers() {
+		if strings.HasPrefix(id, "draw:") {
+			draw = id
+		}
+	}
+	if !h.Timer(draw) || !strings.Contains(ansi.Strip(h.LastFrame()), "draw!") {
+		t.Fatalf("no word: %v\n%s", h.Timers(), h.LastFrame())
+	}
+	h.Key(" ") // at once: faster than anyone reacts, so a guess, a foul
 	sent := h.Sent()
-	var report struct{ MS int }
-	if len(sent) != 1 || json.Unmarshal(sent[0], &report) != nil || h.Storage()["best"] == "" {
-		t.Fatalf("sent %s, storage %v", sent, h.Storage())
+	var result game.Up
+	if json.Unmarshal(sent[len(sent)-1], &result) != nil || result.T != "result" || result.Mode != game.ModeDuel || !result.Foul {
+		t.Fatalf("sent %s", sent)
 	}
-	h.Server(map[string]any{"top": []map[string]any{{"name": "alice", "ms": 199}}})
-	if !strings.Contains(ansi.Strip(h.LastFrame()), "1. alice") {
-		t.Fatalf("leaderboard:\n%s", h.LastFrame())
+	played := map[string]bool{}
+	for _, s := range h.Sounds() {
+		played[s.Asset] = true
+	}
+	for _, want := range []string{"sounds/coin.wav", "sounds/tick.wav", "sounds/draw.wav", "sounds/red.wav"} {
+		if !played[want] {
+			t.Fatalf("no %s among %v", want, h.Sounds())
+		}
 	}
 }
