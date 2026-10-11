@@ -28,6 +28,7 @@ func handler() client.Handler {
 	claimed := false
 	draw := func() {
 		_ = client.Frame(app.View())
+		app.Shown() // on screen now: DRAW!'s clock starts here
 		if want := app.ClaimsEsc(); want != claimed {
 			claimed = want
 			if want {
@@ -50,7 +51,12 @@ func handler() client.Handler {
 		},
 		OnResize: func(e client.Event) { sized(e); draw() },
 		OnKey:    func(e client.Event) { app.Key(e.Key); draw() },
-		OnTimer:  func(id string) { app.Timer(id); draw() },
+		OnTimer: func(id string) {
+			app.Timer(id)
+			if !app.Quiet() { // a bell or a sound: nothing to redraw
+				draw()
+			}
+		},
 		OnServer: func(data json.RawMessage) {
 			var d game.Down
 			if json.Unmarshal(data, &d) == nil {

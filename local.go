@@ -71,6 +71,7 @@ func (m *local) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case downMsg:
 		m.app.Server(game.Down(msg))
 	}
+	m.app.Shown() // Bubble Tea draws this update next
 	return m, tea.Batch(m.take()...)
 }
 

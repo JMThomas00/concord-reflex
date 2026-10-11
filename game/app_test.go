@@ -255,3 +255,32 @@ func TestScreens(t *testing.T) {
 		t.Fatalf("small pane:\n%s", s)
 	}
 }
+
+// The clock starts when DRAW! is on screen, not when the app decided to
+// show it: drawing takes time (a lot, in client code), and that time isn't
+// the player's. Nothing redraws during WAIT... or DRAW!, so a key press
+// never waits behind a frame.
+func TestTheClockStartsWhenDrawIsShown(t *testing.T) {
+	a, env, now := newApp()
+	a.Key("enter")
+	a.Key("enter")
+	a.Key(" ")
+	if a.animated() {
+		t.Fatal("animating during WAIT...: a redraw would hold up the key press")
+	}
+	env.fire(t, a, "bell")
+	if !a.Quiet() {
+		t.Fatal("the bell asked for a redraw")
+	}
+	env.fire(t, a, "draw")
+	if a.Quiet() || a.animated() {
+		t.Fatal("DRAW! must be drawn once, then nothing else")
+	}
+	*now = now.Add(150 * time.Millisecond) // drawing it
+	a.Shown()
+	*now = now.Add(240 * time.Millisecond) // the player
+	a.Key(" ")
+	if a.mine != 240 {
+		t.Fatalf("timed %d ms, want 240", a.mine)
+	}
+}

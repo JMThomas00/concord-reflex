@@ -1,5 +1,5 @@
-github.com/JMThomas00/Concord/sdk v0.14.0 h1:pI/Ok4uh3So7dKIvsic1d7VibSzB9gckwf+BQS6qu8U=
-github.com/JMThomas00/Concord/sdk v0.14.0/go.mod h1:hJyvQwgoXihZyKbGDb9XgPkWZ5gpu02dFY75NH6J1TA=
+github.com/JMThomas00/Concord/sdk v0.14.1 h1:l8mWNp9NUliopyBUh0aGj+5wbRHLmIUpR8MpDIccAf0=
+github.com/JMThomas00/Concord/sdk v0.14.1/go.mod h1:hJyvQwgoXihZyKbGDb9XgPkWZ5gpu02dFY75NH6J1TA=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/charmbracelet/bubbletea v1.3.4 h1:kCg7B+jSCFPLYRA52SDZjr51kG/fMUEoPoZrkaDHyoI=

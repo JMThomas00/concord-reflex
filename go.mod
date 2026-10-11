@@ -3,7 +3,7 @@ module github.com/JMThomas00/concord-reflex
 go 1.24.0
 
 require (
-	github.com/JMThomas00/Concord/sdk v0.14.0
+	github.com/JMThomas00/Concord/sdk v0.14.1
 	github.com/charmbracelet/bubbletea v1.3.4
 	github.com/charmbracelet/x/ansi v0.8.0
 	github.com/google/uuid v1.6.0

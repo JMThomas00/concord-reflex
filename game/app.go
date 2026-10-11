@@ -105,8 +105,10 @@ type App struct {
 	// the duel
 	mode      string
 	ph        phase
-	round     int // stale timers from earlier rounds are ignored
-	drawAt    time.Time
+	round     int       // stale timers from earlier rounds are ignored
+	drawAt    time.Time // when DRAW! was on screen (Shown)
+	drawShown bool      // ...or false while it's still being drawn
+	quiet     bool      // the last event changed nothing on screen
 	theirsAt  int
 	mine      int
 	theirs    int
@@ -192,7 +194,9 @@ func (a *App) animated() bool {
 	case scrTitle:
 		return a.Now().Sub(a.lastKey) < attractFor
 	case scrDuel:
-		return a.ph == phWait || a.ph == phDraw || a.ph == phShot || a.ph == phWaitOpp ||
+		// Never during WAIT... or DRAW!: a redraw then would hold up the key
+		// press behind it, and the time would be the drawing's, not yours.
+		return a.ph == phShot || a.ph == phWaitOpp ||
 			((a.ph == phResult || a.ph == phFoul) && a.Now().Sub(a.lastKey) < 10*time.Second)
 	}
 	return false
@@ -497,6 +501,7 @@ func (a *App) fanfare() {
 
 // Timer handles a timer set with Env.After.
 func (a *App) Timer(id string) {
+	a.quiet = false
 	if id == "tick" {
 		a.ticking = false
 		a.frame++
@@ -513,6 +518,7 @@ func (a *App) Timer(id string) {
 	defer a.kick()
 	switch name {
 	case "bell":
+		a.quiet = true // a sound, nothing to redraw
 		if a.ph == phWait {
 			a.sound(sndTick)
 			a.env.After(a.timer("bell"), 500*time.Millisecond)
@@ -521,13 +527,14 @@ func (a *App) Timer(id string) {
 		if a.ph != phWait {
 			return
 		}
-		a.ph, a.drawAt = phDraw, a.Now()
+		a.ph, a.drawAt, a.drawShown = phDraw, a.Now(), false
 		a.sound(sndDraw)
 		if a.mode == ModeDuel {
 			a.env.After(a.timer("outlaw"), time.Duration(a.theirsAt)*time.Millisecond)
 		}
 		a.env.After(a.timer("slow"), tooSlowFor)
 	case "outlaw":
+		a.quiet = true // he's shown drawing with the result
 		if a.ph == phDraw {
 			a.sound(sndBang) // he's drawn; you're still too slow
 		}
@@ -809,3 +816,16 @@ func (a *App) OnTitle() bool { return a.scr == scrTitle }
 // ClaimsEsc reports whether Esc is the app's: everywhere but the title,
 // where it's Concord's, to leave the pane.
 func (a *App) ClaimsEsc() bool { return a.scr != scrTitle && a.big() }
+
+// Quiet reports whether the last timer changed nothing on screen, so the
+// host can skip drawing it (drawing takes time a player's key press would
+// otherwise wait behind).
+func (a *App) Quiet() bool { return a.quiet }
+
+// Shown tells the app its last frame is on screen: DRAW!'s clock starts
+// then, not before it was drawn.
+func (a *App) Shown() {
+	if a.ph == phDraw && !a.drawShown {
+		a.drawAt, a.drawShown = a.Now(), true
+	}
+}
